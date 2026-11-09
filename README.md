@@ -1,5 +1,9 @@
 # 音乐标签助手
 
+[![CI](https://github.com/FuguiDing/music-tagger/actions/workflows/ci.yml/badge.svg)](https://github.com/FuguiDing/music-tagger/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/FuguiDing/music-tagger)](https://github.com/FuguiDing/music-tagger/releases)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
 无损音乐元数据批量匹配工具：扫描本地 FLAC / WAV / APE 等音频，自动从 **网易云音乐** 与 **QQ音乐** 检索匹配，批量写入歌名、歌手、专辑、专辑艺术家、发行日期、音轨号、封面图与歌词，支持一键撤销。
 
 ## 快速开始
