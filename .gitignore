@@ -1,0 +1,39 @@
+# ---- 构建产物 ----
+build/
+dist/
+*.spec
+*.exe
+*.manifest
+
+# ---- 第三方二进制（运行时由 build.py 自动下载）----
+tools/fpcalc.exe
+tools/*.zip
+tools/partial.bin
+
+# ---- 测试用音频样本（含版权内容，不入库）----
+tests/_samples/
+tests/*.png
+*.flac
+*.wav
+*.mp3
+*.m4a
+*.ape
+
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+
+# ---- 编辑器 / 系统 ----
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ---- 本地配置 ----
+config.json
+*.local
