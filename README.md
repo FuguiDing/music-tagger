@@ -12,6 +12,12 @@
 4. 双击任意一行可手动搜索、更换匹配结果；右键可打开文件位置、跳过
 5. 「应用选中」「应用全部高置信」可分批写入；写错可点「撤销写入」回滚
 
+## 界面预览
+
+![主界面](docs/screenshot-main.png)
+
+![声纹兜底设置](docs/screenshot-acoustic.png)
+
 ## 支持格式
 
 `.flac` `.wav` `.mp3` `.m4a/.aac` `.ape` `.wv` `.ogg` `.opus` `.aiff`

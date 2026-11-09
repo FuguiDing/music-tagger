@@ -1,0 +1,64 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.9", "3.11", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: 安装依赖
+        run: pip install requests mutagen
+
+      - name: 语法检查
+        run: python -m compileall mtcore main.py tools -q
+
+      - name: 核心模块冒烟测试
+        run: |
+          python - <<'PY'
+          from mtcore import matcher, media, pipeline, sources, textutil
+          from mtcore.models import Candidate, TrackFile
+
+          # 文件名解析：剥音轨前缀、识别"歌手 - 歌名"
+          p = textutil.parse_filename("35.蓝心湄 - 不伪装的温柔.flac")
+          assert p["title"] == "不伪装的温柔" and p["artist"] == "蓝心湄", p
+          assert p["track"] == 35, p
+          p2 = textutil.parse_filename("周杰伦 - 晴天.mp3")
+          assert p2["title"] == "晴天" and p2["artist"] == "周杰伦", p2
+
+          # 占位文件名判定（决定是否直接走声纹）
+          assert textutil.is_placeholder("track01")
+          assert textutil.is_placeholder("01")
+          assert textutil.is_placeholder("CD1-02")
+          assert not textutil.is_placeholder("心要野")
+
+          # 打分：正版高置信，Live 错配被降权
+          tf = TrackFile(path="x.flac", filename="晴天.mp3", duration=270,
+                         q_title="晴天", q_artist="周杰伦")
+          good = Candidate(source="网易云", song_id="1", title="晴天",
+                           artists="周杰伦", album="叶惠美", duration=269.5)
+          bad = Candidate(source="网易云", song_id="2", title="晴天 (Live)",
+                          artists="某人", album="翻唱集", duration=300)
+          s_good = matcher.score_candidate(tf, good)
+          s_bad = matcher.score_candidate(tf, bad)
+          assert s_good > 0.8, s_good
+          assert s_bad < 0.5, s_bad
+
+          # 音源注册表可实例化
+          ne, qq = sources.NetEaseSource(), sources.QQSource()
+          assert ne.name and qq.name
+
+          print(f"smoke ok: good={s_good:.2f} bad={s_bad:.2f}")
+          PY
