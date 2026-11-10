@@ -20,7 +20,6 @@
 
 ![主界面](docs/screenshot-main.png)
 
-![声纹兜底设置](docs/screenshot-acoustic.png)
 
 ## 支持格式
 
