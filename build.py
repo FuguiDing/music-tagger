@@ -112,7 +112,10 @@ def main():
         if not os.path.isdir(app):
             raise SystemExit("打包失败：未生成 MusicTagger.app")
         base = os.path.join(HERE, "dist", "MusicTagger-macos")
-        shutil.make_archive(base, "zip", HERE, "MusicTagger.app")
+        # 在 dist/ 内打包，zip 里是 MusicTagger.app/...
+        shutil.make_archive(base, "zip",
+                            root_dir=os.path.join(HERE, "dist"),
+                            base_dir="MusicTagger.app")
         z = base + ".zip"
         print(f"\n完成: {z} ({os.path.getsize(z) / 1048576:.1f} MB)")
         print("提示: 未做公证（notarization），首次打开需右键 → 打开，"
