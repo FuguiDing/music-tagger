@@ -5,6 +5,7 @@ import base64
 import json
 import os
 import shutil
+import sys
 import tempfile
 import time
 from pathlib import Path
@@ -25,7 +26,18 @@ from .textutil import format_duration, parse_filename, safe_filename, strip_nois
 
 FIELD_ORDER = ["title", "artist", "album", "albumartist", "date", "tracknumber", "genre"]
 
-APP_DIR = Path(os.environ.get("LOCALAPPDATA") or tempfile.gettempdir()) / "MusicTagger"
+def _default_app_dir() -> Path:
+    """跨平台的应用数据目录（备份、报告等）。"""
+    if sys.platform == "win32":
+        base = Path(os.environ.get("LOCALAPPDATA") or tempfile.gettempdir())
+    elif sys.platform == "darwin":
+        base = Path.home() / "Library" / "Application Support"
+    else:  # Linux / 其他 Unix：遵循 XDG
+        base = Path(os.environ.get("XDG_DATA_HOME") or Path.home() / ".local" / "share")
+    return base / "MusicTagger"
+
+
+APP_DIR = _default_app_dir()
 BACKUP_DIR = APP_DIR / "backups"
 
 
@@ -501,11 +513,19 @@ def restore_backup(path: Path, on_progress=None) -> Tuple[int, int, List[str]]:
 
 
 def open_in_explorer(path: str):
+    """在系统文件管理器中定位文件（macOS 用 Finder，Linux 用文件管理器）。"""
     try:
         import subprocess
-        if os.path.isdir(path):
-            subprocess.Popen(["explorer", os.path.abspath(path)])
+        target = os.path.abspath(path)
+        if sys.platform == "darwin":
+            subprocess.Popen(["open", "-R", target])
+        elif sys.platform == "win32":
+            if os.path.isdir(target):
+                subprocess.Popen(["explorer", target])
+            else:
+                subprocess.Popen(["explorer", "/select,", target])
         else:
-            subprocess.Popen(["explorer", "/select,", os.path.abspath(path)])
+            subprocess.Popen(["xdg-open", target if os.path.isdir(target)
+                              else os.path.dirname(target)])
     except Exception:
         pass

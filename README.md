@@ -21,6 +21,28 @@
 ![主界面](docs/screenshot-main.png)
 
 
+## macOS（Apple Silicon / Intel）
+
+v1.3 起支持 macOS（M 系列芯片已适配，代码与界面完全一致）：
+
+```bash
+# 方式一：源码运行
+pip install -r requirements.txt
+python main.py
+
+# 声纹 AcoustID 引擎需要 fpcalc（二选一）
+python tools/fetch_fpcalc.py           # 下载 macOS universal 官方包到 tools/
+brew install libchromaprint            # 或用 Homebrew 安装
+
+# 方式二：打包为 .app
+python build.py                        # 产出 dist/MusicTagger.app
+```
+
+- 也可直接下载 **Releases** 里的 `MusicTagger-macos.zip`（GitHub Actions 在 M1 真机上构建）。
+- 压缩包未经公证：首次打开若提示"无法验证开发者"，**右键 → 打开**，或执行 `xattr -cr MusicTagger.app`。
+- 标签备份位置：`~/Library/Application Support/MusicTagger/backups/`。
+- Shazam 引擎依赖（shazamio、soundfile、numpy）均提供 Apple Silicon 原生 wheel，无 Rosetta 转译。
+
 ## 支持格式
 
 `.flac` `.wav` `.mp3` `.m4a/.aac` `.ape` `.wv` `.ogg` `.opus` `.aiff`

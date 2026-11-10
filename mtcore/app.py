@@ -101,11 +101,27 @@ class App(tk.Tk):
 
     # ------------------------------------------------------------------ 样式
     def _set_icon(self):
+        """设置窗口图标（macOS 的 Tk 不支持 .ico，改用 iconphoto）。"""
         try:
-            base = Path(getattr(__import__("sys"), "_MEIPASS", Path(__file__).resolve().parent.parent))
-            ico = base / "icon.ico"
-            if ico.exists():
-                self.iconbitmap(str(ico))
+            import sys
+            base = Path(getattr(__import__("sys"), "_MEIPASS",
+                                Path(__file__).resolve().parent.parent))
+            candidates = [base, base / "assets"]
+
+            if sys.platform == "darwin":
+                from tkinter import PhotoImage
+                for d in candidates:
+                    png = d / "icon_256.png"
+                    if png.exists():
+                        self.iconphoto(True, PhotoImage(file=str(png)))
+                        return
+                return
+
+            for d in candidates:
+                ico = d / "icon.ico"
+                if ico.exists():
+                    self.iconbitmap(str(ico))
+                    return
         except Exception:
             pass
 

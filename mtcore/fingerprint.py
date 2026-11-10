@@ -93,6 +93,9 @@ def _fpcalc_candidates() -> List[str]:
         os.path.join(_base_dir(), "tools"),
         os.path.dirname(os.path.abspath(__file__)),
     ]
+    if sys.platform == "darwin":
+        # GUI 启动的 .app 不继承 shell 的 PATH，显式补上 Homebrew 路径
+        dirs += ["/opt/homebrew/bin", "/usr/local/bin"]
     if getattr(sys, "frozen", False):
         dirs.append(os.path.dirname(sys.executable))
     for d in dirs:

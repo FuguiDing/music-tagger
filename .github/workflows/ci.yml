@@ -62,3 +62,87 @@ jobs:
 
           print(f"smoke ok: good={s_good:.2f} bad={s_bad:.2f}")
           PY
+
+      - name: 离线读写自测（扫描 / 写入 / 读回 / 撤销）
+        run: python tests/test_offline.py
+
+  # ------------------------------------------------------------------
+  # Apple Silicon（M 系列）真机测试
+  # ------------------------------------------------------------------
+  test-macos:
+    runs-on: macos-14   # M1 芯片 runner
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: 安装依赖
+        run: |
+          pip install --upgrade pip
+          pip install requests mutagen soundfile numpy shazamio
+
+      - name: 语法检查
+        run: python -m compileall mtcore main.py tools -q
+
+      - name: 离线读写自测（M1 真机）
+        run: python tests/test_offline.py
+
+      - name: 声纹引擎环境自检
+        run: |
+          python - <<'PY'
+          import sys
+          from mtcore import fingerprint as fpm
+
+          assert sys.platform == "darwin", sys.platform
+          assert fpm._has_soundfile(), "soundfile/numpy 不可用"
+          assert fpm._has_shazam(), "shazamio 不可用"
+          st = fpm.engine_status()
+          print("引擎状态:", st)
+          assert "Shazam" in st.get("shazam", "") or "可用" in st.get("shazam", ""), st
+          # AcoustID 引擎：fpcalc 或 ffmpeg 至少其一
+          assert "可用" in st.get("acoustid", "") or st["acoustid"] == "缺少 fpcalc/ffmpeg"
+          print("macOS 声纹环境自检通过 ✔")
+          PY
+
+  # ------------------------------------------------------------------
+  # macOS .app 打包（Apple Silicon）
+  # ------------------------------------------------------------------
+  build-macos:
+    runs-on: macos-14
+    needs: [check, test-macos]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: 安装依赖
+        run: |
+          pip install --upgrade pip
+          pip install requests mutagen soundfile numpy shazamio pyinstaller
+
+      - name: 下载 fpcalc（macOS universal）
+        run: python tools/fetch_fpcalc.py
+
+      - name: 打包 .app
+        run: python build.py
+
+      - name: 校验产物架构
+        run: |
+          BIN="dist/MusicTagger.app/Contents/MacOS/MusicTagger"
+          test -d dist/MusicTagger.app || { echo "未生成 .app"; exit 1; }
+          file "$BIN"
+          lipo -archs "$BIN"
+          # 内置 fpcalc 也应是 universal/arm64
+          file dist/MusicTagger.app/Contents/Resources/fpcalc 2>/dev/null || \
+            file dist/MusicTagger.app/Contents/MacOS/fpcalc || true
+
+      - name: 上传构建产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: MusicTagger-macos
+          path: dist/MusicTagger-macos.zip
+          if-no-files-found: error

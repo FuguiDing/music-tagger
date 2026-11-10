@@ -20,7 +20,12 @@ def _enable_dpi():
 
 
 def _app_dir():
-    base = os.environ.get("LOCALAPPDATA") or os.path.expanduser("~")
+    if sys.platform == "darwin":
+        base = os.path.expanduser("~/Library/Application Support")
+    elif sys.platform == "win32":
+        base = os.environ.get("LOCALAPPDATA") or os.path.expanduser("~")
+    else:
+        base = os.environ.get("XDG_DATA_HOME") or os.path.expanduser("~/.local/share")
     d = os.path.join(base, "MusicTagger")
     os.makedirs(d, exist_ok=True)
     return d
