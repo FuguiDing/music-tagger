@@ -70,7 +70,7 @@ jobs:
   # Apple Silicon（M 系列）真机测试
   # ------------------------------------------------------------------
   test-macos:
-    runs-on: macos-14   # M1 芯片 runner
+    runs-on: macos-15   # M1 芯片 runner
     steps:
       - uses: actions/checkout@v4
 
@@ -110,7 +110,7 @@ jobs:
   # macOS .app 打包（Apple Silicon）
   # ------------------------------------------------------------------
   build-macos:
-    runs-on: macos-14
+    runs-on: macos-15
     needs: [check, test-macos]
     steps:
       - uses: actions/checkout@v4
